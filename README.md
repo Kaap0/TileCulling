@@ -11,7 +11,7 @@ Basically exchanging server cpu(async calculation)+memory(needs to keep snapshot
 
 ## Requires
 
-- Paper/Spigot 1.16.5 ~ 1.18.2!
+- Paper/Spigot 1.16.5 ~ 1.20.2!
 - ProtocolLib
 
 ## Known issues
