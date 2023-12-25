@@ -1,0 +1,8 @@
+#https://hub.spigotmc.org/javadocs/spigot/org/bukkit/entity/EntityType.html
+always-visible-entities:
+  - ZOMBIE
+  - ZOMBIFIED_PIGLIN
+  - PIGLIN
+  - ENDERMAN
+  - SPIDER
+  - CAVE_SPIDER

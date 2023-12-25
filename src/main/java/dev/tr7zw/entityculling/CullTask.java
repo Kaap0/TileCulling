@@ -74,7 +74,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 
 
- //import net.minecraft.server.v1_16_R3.PlayerChunkMap.EntityTracker;
+//import net.minecraft.server.v1_16_R3.PlayerChunkMap.EntityTracker;
 //import net.minecraft.server.level.ChunkMap.TrackedEntity;
 import net.minecraft.server.level.PlayerChunkMap.EntityTracker;
 
@@ -91,7 +91,7 @@ public class CullTask implements Runnable {
 
     private CullingPlugin instance;
     private int counter = 0;
-    private AxisAlignedBB blockAABB = new AxisAlignedBB(0d, 0d, 0d, 1d, 1d, 1d);
+//    private AxisAlignedBB blockAABB = new AxisAlignedBB(0d, 0d, 0d, 1d, 1d, 1d);
     private AxisAlignedBB entityAABB = new AxisAlignedBB(0d, 0d, 0d, 1d, 2d, 1d);
     private OcclusionCullingInstance culling = new OcclusionCullingInstance();
 
@@ -115,26 +115,29 @@ public class CullTask implements Runnable {
                         entityUpdateChunks.add(coods);
                     }
                     if (instance.blockChangeListener.isInLoadedChunk(coods)) {
-                        // ChunkSnapshot chunkSnapshot = instance.blockChangeListener.getChunk(loc);
-                        BlockState[] tiles = instance.blockChangeListener.getChunkTiles(coods);
-                        if (tiles != null) {
-                            for (BlockState block : tiles) {
-                                //if (block.getType() == Material.CHEST) {
-                                boolean canSee = culling.isAABBVisible(block.getLocation(), blockAABB,
-                                        player.getEyeLocation(), false);
-                                boolean hidden = instance.cache.isHidden(player, block.getLocation());
-                                if (hidden && canSee) {
-                                    instance.cache.setHidden(player, block.getLocation(), false);
-                                    player.sendBlockChange(block.getLocation(), block.getBlockData());
-                                } else if (!hidden && !canSee) {
-                                    instance.cache.setHidden(player, block.getLocation(), true);
-                                    player.sendBlockChange(block.getLocation(), Material.BARRIER, (byte) 0);
-                                }
-                                //}
-                            }
-                        }
 
-                       // Bukkit.broadcastMessage("1"); //TODO DEBUG
+
+                        //DROPPING SUPPORT FOR BLOCKS :)
+
+                        // ChunkSnapshot chunkSnapshot = instance.blockChangeListener.getChunk(loc);
+//                        BlockState[] tiles = instance.blockChangeListener.getChunkTiles(coods);
+//                        if (tiles != null) {
+//                            for (BlockState block : tiles) {
+//                                //if (block.getType() == Material.CHEST) {
+//                                boolean canSee = culling.isAABBVisible(block.getLocation(), blockAABB,
+//                                        player.getEyeLocation(), false);
+//                                boolean hidden = instance.cache.isHidden(player, block.getLocation());
+//                                if (hidden && canSee) {
+//                                    instance.cache.setHidden(player, block.getLocation(), false);
+//                                    player.sendBlockChange(block.getLocation(), block.getBlockData());
+//                                } else if (!hidden && !canSee) {
+//                                    instance.cache.setHidden(player, block.getLocation(), true);
+//                                    player.sendBlockChange(block.getLocation(), Material.BARRIER, (byte) 0);
+//                                }
+//                                //}
+//                            }
+//                        }
+
 
                         Entity[] entities = instance.blockChangeListener.getChunkEntities(coods);
 
@@ -146,58 +149,54 @@ public class CullTask implements Runnable {
                         Int2ObjectMap<EntityTracker> trackers = worldServer.k().a.K;
 
 
-
-                        EntityPlayer nmsPlayer = ((CraftPlayer) player).getHandle();
+//                        EntityPlayer nmsPlayer = ((CraftPlayer) player).getHandle();
                         if (entities != null && trackers != null) {
-                          //  Bukkit.broadcastMessage("2"); //TODO DEBUG
                             for (Entity entity : entities) {
                                 EntityTracker tracker = trackers.get(entity.getEntityId());
                                 if (tracker == null) {
-                                //    Bukkit.broadcastMessage("3"); //TODO DEBUG
                                     continue;
                                 }
 //                                if(!tracker.f.contains(nmsPlayer)) { //TODO OLI if(!tracker.trackedPlayers.contains(nmsPlayer))
-//                                    Bukkit.broadcastMessage(tracker.f.toString());
-//                               //     Bukkit.broadcastMessage("4"); //TODO DEBUG
 //                                    continue;
 //                                }
+
+
+                                //Entity Filtering
+
+                                if (instance.config.getList("always-visible-entities").contains(entity.getType().toString())) {
+                                    continue;
+                                }
+
+
                                 boolean canSee = culling.isAABBVisible(entity.getLocation(), entityAABB,
                                         player.getEyeLocation(), true);
                                 boolean hidden = instance.cache.isHidden(player, entity);
-                             //   Bukkit.broadcastMessage("5"); //TODO DEBUG
                                 if (hidden && canSee) {
                                     instance.cache.setHidden(player, entity, false);
-                                  //  Bukkit.broadcastMessage("Unhiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
+                                    //  Bukkit.broadcastMessage("Unhiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
                                     if (entity instanceof Player) {
                                         // Do nothing!
                                     } else if (entity instanceof LivingEntity) {
-                                 //       Bukkit.broadcastMessage("6"); //TODO DEBUG
                                         PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(
                                                 (EntityLiving) ((CraftEntity) entity).getHandle());
                                         sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY, packet);
                                         List<Pair<EnumItemSlot, ItemStack>> armor = new ArrayList<>();
                                         for (EnumItemSlot slot : EnumItemSlot.values()) {
-                                 //           Bukkit.broadcastMessage("7"); //TODO DEBUG
                                             armor.add(Pair.of(slot, ((EntityLiving) ((CraftEntity) entity).getHandle()).c(slot)));
                                         }
-                                 //       Bukkit.broadcastMessage("8"); //TODO DEBUG
                                         PacketPlayOutEntityEquipment equip = new PacketPlayOutEntityEquipment(entity.getEntityId(), armor);
                                         sendPacket(player, PacketType.Play.Server.ENTITY_EQUIPMENT, equip);
                                     } else {
-                                //        Bukkit.broadcastMessage("9"); //TODO DEBUG
                                         PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(
                                                 ((CraftEntity) entity).getHandle());
                                         sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY, packet);
                                     }
-                              //      Bukkit.broadcastMessage("10"); //TODO DEBUG
-                                    PacketPlayOutEntityMetadata metaPacket = new PacketPlayOutEntityMetadata(entity.getEntityId(), (List<DataWatcher.b<?>>) ((CraftEntity) entity).getHandle().aj()); // TODO MITÄHÄN TÄHÄN
+                                    PacketPlayOutEntityMetadata metaPacket = new PacketPlayOutEntityMetadata(entity.getEntityId(), ((CraftEntity) entity).getHandle().aj().c()); //TODO ?
                                     sendPacket(player, PacketType.Play.Server.ENTITY_METADATA, metaPacket);
                                 } else if (!hidden && !canSee) { // hide entity
-                               //     Bukkit.broadcastMessage("11"); //TODO DEBUG
                                     if (!(entity instanceof Player) && !(entity instanceof ExperienceOrb) && !(entity instanceof Painting)) {
-                               //         Bukkit.broadcastMessage("12"); //TODO DEBUG
                                         instance.cache.setHidden(player, entity, true);
-                                      //  Bukkit.broadcastMessage("Hiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
+                                        //  Bukkit.broadcastMessage("Hiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
                                         PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(
                                                 entity.getEntityId());
                                         sendPacket(player, PacketType.Play.Server.ENTITY_DESTROY, packet);

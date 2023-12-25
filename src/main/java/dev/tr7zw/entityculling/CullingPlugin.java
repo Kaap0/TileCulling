@@ -1,6 +1,7 @@
 package dev.tr7zw.entityculling;
 
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -24,9 +25,13 @@ public class CullingPlugin extends JavaPlugin {
 	public BlockChangeListener blockChangeListener;
 	public PlayerCache cache;
 
+	public FileConfiguration config;
+
 	@Override
 	public void onEnable() {
 		instance = this;
+		saveDefaultConfig();
+		config = getConfig();
 		blockChangeListener = new BlockChangeListener();
 		cache = new PlayerCache();
 		Bukkit.getPluginManager().registerEvents(blockChangeListener, this);
