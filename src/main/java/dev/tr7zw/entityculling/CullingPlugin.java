@@ -1,7 +1,7 @@
 package dev.tr7zw.entityculling;
 
 import org.bukkit.Bukkit;
-import org.bukkit.craftbukkit.v1_16_R3.CraftWorld;
+import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
 import org.bukkit.entity.EntityType;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -13,7 +13,7 @@ import com.comphenix.protocol.events.PacketEvent;
 
 import dev.tr7zw.entityculling.occlusionculling.BlockChangeListener;
 import dev.tr7zw.entityculling.occlusionculling.OcclusionCullingUtils;
-import net.minecraft.server.v1_16_R3.Entity;
+import net.minecraft.world.entity.Entity;
 
 public class CullingPlugin extends JavaPlugin {
 
@@ -33,11 +33,11 @@ public class CullingPlugin extends JavaPlugin {
 		Bukkit.getPluginManager().registerEvents(cache, this);
 		Bukkit.getScheduler().runTaskTimerAsynchronously(instance, new CullTask(this), 1, 1);
 		ProtocolLibrary.getProtocolManager().addPacketListener(new PacketAdapter(this, ListenerPriority.NORMAL,
-				PacketType.Play.Server.SPAWN_ENTITY_LIVING, PacketType.Play.Server.SPAWN_ENTITY) {
+				PacketType.Play.Server.SPAWN_ENTITY, PacketType.Play.Server.SPAWN_ENTITY) {
 			@Override
 			public void onPacketSending(PacketEvent event) {
 				int entityyId = event.getPacket().getIntegers().read(0);
-				Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().getEntity(entityyId);
+				Entity entity = ((CraftWorld) event.getPlayer().getWorld()).getHandle().a(entityyId); //TODO MUOKATTU
 				if (entity != null && entity.getBukkitEntity().getType() != EntityType.PLAYER) {
 					boolean canSee = OcclusionCullingUtils.isAABBVisible(entity.getBukkitEntity().getLocation(),
 							entityAABB, event.getPlayer().getEyeLocation(), true);
@@ -51,7 +51,7 @@ public class CullingPlugin extends JavaPlugin {
 		ProtocolLibrary.getProtocolManager().addPacketListener(
 				new PacketAdapter(this, ListenerPriority.NORMAL, PacketType.Play.Server.ENTITY_METADATA,
 						PacketType.Play.Server.ENTITY_HEAD_ROTATION, PacketType.Play.Server.ENTITY_VELOCITY,
-						PacketType.Play.Server.ENTITY_LOOK, PacketType.Play.Server.ENTITY_MOVE_LOOK,
+						PacketType.Play.Server.ENTITY_LOOK, PacketType.Play.Server.REL_ENTITY_MOVE_LOOK,
 						PacketType.Play.Server.REL_ENTITY_MOVE, PacketType.Play.Server.REL_ENTITY_MOVE_LOOK) {
 					@Override
 					public void onPacketSending(PacketEvent event) {
