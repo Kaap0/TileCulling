@@ -1,26 +1,15 @@
 package dev.tr7zw.entityculling;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.minecraft.core.registries.Registries;
 import net.minecraft.network.syncher.DataWatcher;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.WorldServer;
-import net.minecraft.server.network.ServerPlayerConnection;
-import net.minecraft.world.level.Level;
 import org.bukkit.*;
-import org.bukkit.block.BlockState;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import org.bukkit.craftbukkit.v1_20_R1.CraftServer;
 import org.bukkit.craftbukkit.v1_20_R1.CraftWorld;
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer;
 import org.bukkit.craftbukkit.v1_20_R1.entity.CraftEntity;
 
 //import org.bukkit.craftbukkit.v1_16_R3.CraftServer;
@@ -46,9 +35,6 @@ import dev.tr7zw.entityculling.occlusionculling.BlockChangeListener.ChunkCoords;
 
 //import net.minecraft.server.v1_16_R3.EntityLiving;
 import net.minecraft.world.entity.EntityLiving;
-
-
-import net.minecraft.server.level.EntityPlayer;
 
 
 import net.minecraft.world.entity.EnumItemSlot;
@@ -80,7 +66,7 @@ import net.minecraft.server.level.PlayerChunkMap.EntityTracker;
 
 
 // import net.minecraft.server.v1_16_R3.WorldServer;
-import net.minecraft.server.level.ServerLevel;
+
 
 /**
  * Todo: cleanup this mess
@@ -91,7 +77,7 @@ public class CullTask implements Runnable {
 
     private CullingPlugin instance;
     private int counter = 0;
-//    private AxisAlignedBB blockAABB = new AxisAlignedBB(0d, 0d, 0d, 1d, 1d, 1d);
+    //    private AxisAlignedBB blockAABB = new AxisAlignedBB(0d, 0d, 0d, 1d, 1d, 1d);
     private AxisAlignedBB entityAABB = new AxisAlignedBB(0d, 0d, 0d, 1d, 2d, 1d);
     private OcclusionCullingInstance culling = new OcclusionCullingInstance();
 
@@ -191,8 +177,13 @@ public class CullTask implements Runnable {
                                                 ((CraftEntity) entity).getHandle());
                                         sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY, packet);
                                     }
+
+                                    if (((CraftEntity) entity).getHandle().aj().c() == null) { //TODO TEIPPIJÄ
+                                        return;
+                                    }
                                     PacketPlayOutEntityMetadata metaPacket = new PacketPlayOutEntityMetadata(entity.getEntityId(), ((CraftEntity) entity).getHandle().aj().c()); //TODO ?
                                     sendPacket(player, PacketType.Play.Server.ENTITY_METADATA, metaPacket);
+
                                 } else if (!hidden && !canSee) { // hide entity
                                     if (!(entity instanceof Player) && !(entity instanceof ExperienceOrb) && !(entity instanceof Painting)) {
                                         instance.cache.setHidden(player, entity, true);
