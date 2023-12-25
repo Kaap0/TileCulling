@@ -13,6 +13,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.WorldServer;
+import net.minecraft.server.network.ServerPlayerConnection;
 import net.minecraft.world.level.Level;
 import org.bukkit.*;
 import org.bukkit.block.BlockState;
@@ -73,7 +74,7 @@ import net.minecraft.network.protocol.game.PacketPlayOutEntityMetadata;
 import net.minecraft.network.protocol.game.PacketPlayOutSpawnEntity;
 
 
-// import net.minecraft.server.v1_16_R3.PlayerChunkMap.EntityTracker;
+ //import net.minecraft.server.v1_16_R3.PlayerChunkMap.EntityTracker;
 //import net.minecraft.server.level.ChunkMap.TrackedEntity;
 import net.minecraft.server.level.PlayerChunkMap.EntityTracker;
 
@@ -132,6 +133,9 @@ public class CullTask implements Runnable {
                                 //}
                             }
                         }
+
+                       // Bukkit.broadcastMessage("1"); //TODO DEBUG
+
                         Entity[] entities = instance.blockChangeListener.getChunkEntities(coods);
 
 
@@ -145,42 +149,55 @@ public class CullTask implements Runnable {
 
                         EntityPlayer nmsPlayer = ((CraftPlayer) player).getHandle();
                         if (entities != null && trackers != null) {
+                          //  Bukkit.broadcastMessage("2"); //TODO DEBUG
                             for (Entity entity : entities) {
                                 EntityTracker tracker = trackers.get(entity.getEntityId());
                                 if (tracker == null) {
+                                //    Bukkit.broadcastMessage("3"); //TODO DEBUG
                                     continue;
                                 }
-                                if(!tracker.f.contains(nmsPlayer)) { //TODO OLI if(!tracker.trackedPlayers.contains(nmsPlayer))
-                                    continue;
-                                }
+//                                if(!tracker.f.contains(nmsPlayer)) { //TODO OLI if(!tracker.trackedPlayers.contains(nmsPlayer))
+//                                    Bukkit.broadcastMessage(tracker.f.toString());
+//                               //     Bukkit.broadcastMessage("4"); //TODO DEBUG
+//                                    continue;
+//                                }
                                 boolean canSee = culling.isAABBVisible(entity.getLocation(), entityAABB,
                                         player.getEyeLocation(), true);
                                 boolean hidden = instance.cache.isHidden(player, entity);
+                             //   Bukkit.broadcastMessage("5"); //TODO DEBUG
                                 if (hidden && canSee) {
                                     instance.cache.setHidden(player, entity, false);
+                                  //  Bukkit.broadcastMessage("Unhiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
                                     if (entity instanceof Player) {
                                         // Do nothing!
                                     } else if (entity instanceof LivingEntity) {
+                                 //       Bukkit.broadcastMessage("6"); //TODO DEBUG
                                         PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(
                                                 (EntityLiving) ((CraftEntity) entity).getHandle());
-                                        sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY_LIVING, packet);
+                                        sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY, packet);
                                         List<Pair<EnumItemSlot, ItemStack>> armor = new ArrayList<>();
                                         for (EnumItemSlot slot : EnumItemSlot.values()) {
+                                 //           Bukkit.broadcastMessage("7"); //TODO DEBUG
                                             armor.add(Pair.of(slot, ((EntityLiving) ((CraftEntity) entity).getHandle()).c(slot)));
                                         }
+                                 //       Bukkit.broadcastMessage("8"); //TODO DEBUG
                                         PacketPlayOutEntityEquipment equip = new PacketPlayOutEntityEquipment(entity.getEntityId(), armor);
                                         sendPacket(player, PacketType.Play.Server.ENTITY_EQUIPMENT, equip);
                                     } else {
+                                //        Bukkit.broadcastMessage("9"); //TODO DEBUG
                                         PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(
                                                 ((CraftEntity) entity).getHandle());
                                         sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY, packet);
                                     }
-
+                              //      Bukkit.broadcastMessage("10"); //TODO DEBUG
                                     PacketPlayOutEntityMetadata metaPacket = new PacketPlayOutEntityMetadata(entity.getEntityId(), (List<DataWatcher.b<?>>) ((CraftEntity) entity).getHandle().aj()); // TODO MITÄHÄN TÄHÄN
                                     sendPacket(player, PacketType.Play.Server.ENTITY_METADATA, metaPacket);
                                 } else if (!hidden && !canSee) { // hide entity
+                               //     Bukkit.broadcastMessage("11"); //TODO DEBUG
                                     if (!(entity instanceof Player) && !(entity instanceof ExperienceOrb) && !(entity instanceof Painting)) {
+                               //         Bukkit.broadcastMessage("12"); //TODO DEBUG
                                         instance.cache.setHidden(player, entity, true);
+                                      //  Bukkit.broadcastMessage("Hiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
                                         PacketPlayOutEntityDestroy packet = new PacketPlayOutEntityDestroy(
                                                 entity.getEntityId());
                                         sendPacket(player, PacketType.Play.Server.ENTITY_DESTROY, packet);
@@ -196,7 +213,7 @@ public class CullTask implements Runnable {
             counter = 0;
             CullingPlugin.instance.blockChangeListener.updateCachedChunkEntitiesSync(entityUpdateChunks);
         }
-        //Bukkit.broadcastMessage("Time: " + (System.currentTimeMillis() - start));
+        //Bukkit.broadcastMessage("Time: " + (System.currentTimeMillis() - start)); //TODO DEBUG
     }
 
     private void sendPacket(Player player, PacketType type, Packet<?> packet) {
