@@ -162,7 +162,8 @@ public class CullTask implements Runnable {
                                     //  Bukkit.broadcastMessage("Unhiding entity "+entity.getName()+" from player "+player.getName()); //TODO DEBUG
                                     if (entity instanceof Player) {
                                         // Do nothing!
-                                    } else if (entity instanceof LivingEntity) {
+                                    } else
+                                        if (entity instanceof LivingEntity) {
                                         PacketPlayOutSpawnEntity packet = new PacketPlayOutSpawnEntity(
                                                 (EntityLiving) ((CraftEntity) entity).getHandle());
                                         sendPacket(player, PacketType.Play.Server.SPAWN_ENTITY, packet);
@@ -180,9 +181,11 @@ public class CullTask implements Runnable {
 
                                     if (((CraftEntity) entity).getHandle().aj().c() == null) { //TODO TEIPPIJÄ
                                         return;
+                                    } else {
+                                        PacketPlayOutEntityMetadata metaPacket = new PacketPlayOutEntityMetadata(entity.getEntityId(), ((CraftEntity) entity).getHandle().aj().c()); //TODO ?
+                                        sendPacket(player, PacketType.Play.Server.ENTITY_METADATA, metaPacket);
                                     }
-                                    PacketPlayOutEntityMetadata metaPacket = new PacketPlayOutEntityMetadata(entity.getEntityId(), ((CraftEntity) entity).getHandle().aj().c()); //TODO ?
-                                    sendPacket(player, PacketType.Play.Server.ENTITY_METADATA, metaPacket);
+
 
                                 } else if (!hidden && !canSee) { // hide entity
                                     if (!(entity instanceof Player) && !(entity instanceof ExperienceOrb) && !(entity instanceof Painting)) {

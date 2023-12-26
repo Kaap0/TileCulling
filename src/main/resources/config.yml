@@ -6,3 +6,4 @@ always-visible-entities:
   - ENDERMAN
   - SPIDER
   - CAVE_SPIDER
+player-visibility-range: 10
