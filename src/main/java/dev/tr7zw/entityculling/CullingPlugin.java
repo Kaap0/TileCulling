@@ -32,7 +32,6 @@ public class CullingPlugin extends JavaPlugin {
 		instance = this;
 		saveDefaultConfig();
 		config = getConfig();
-		getServer().getPluginManager().registerEvents(new PlayerVisibilityProximity(), this);
 		blockChangeListener = new BlockChangeListener();
 		cache = new PlayerCache();
 		Bukkit.getPluginManager().registerEvents(blockChangeListener, this);
